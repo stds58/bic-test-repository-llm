@@ -1,0 +1,106 @@
+from typing import Generic, List, Optional, TypeVar
+import requests
+from pydantic import BaseModel as PydanticModel
+from app.core.config import settings
+from app.schemas.base import PaginationParams
+from app.exceptions.exeption_wrapper import handle_openrouter_errors
+
+
+# pylint: disable-next=no-name-in-module,invalid-name
+ModelType = TypeVar("ModelType", bound=PydanticModel)
+# pylint: disable-next=no-name-in-module,invalid-name
+FilterSchemaType = TypeVar("FilterSchemaType", bound=PydanticModel)
+# pylint: disable-next=no-name-in-module,invalid-name
+RequestSchemaType = TypeVar("RequestSchemaType", bound=PydanticModel)
+# pylint: disable-next=no-name-in-module,invalid-name
+ResponseSchemaType = TypeVar("ResponseSchemaType", bound=PydanticModel)
+
+
+# pylint: disable-next=too-few-public-methods
+class FiltrMixin:
+    @classmethod
+    def _apply_filters(cls, models_data, filters: FilterSchemaType):
+        filter_dict = filters.model_dump(exclude_none=True)
+        filtered_models = []
+
+        for model_data in models_data:
+            match = True
+            for field, value in filter_dict.items():
+                model_value = model_data.get(field)
+                if isinstance(value, str):
+                    if not isinstance(model_value, str) or value not in model_value:
+                        match = False
+                else:
+                    if model_value != value:
+                        match = False
+            if match:
+                filtered_models.append(model_data)
+        return filtered_models
+
+
+# pylint: disable-next=too-few-public-methods
+class PaginationMixin:
+    @classmethod
+    def _apply_pagination(cls, models_data, pagination: PaginationParams):
+        start = (pagination.page - 1) * pagination.per_page
+        end = start + pagination.per_page
+        return models_data[start:end]
+
+
+class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, ModelType]):
+    filter_schema: type[FilterSchemaType]
+    pydantic_model: type[ModelType]
+    request_schema: type[RequestSchemaType]
+    reponse_schema: type[ResponseSchemaType]
+
+    @classmethod
+    @handle_openrouter_errors
+    def find_many(
+        cls,
+        filters: Optional[FilterSchemaType] = None,
+        pagination: Optional[PaginationParams] = None,
+        timeout: int = 10,
+    ) -> List[ModelType]:
+        headers = {
+            "Authorization": f"Bearer {settings.OPEN_ROUTER_API_KEY}",
+            "HTTP-Referer": settings.OPEN_ROUTER_URL,
+            "X-Title": "My FastAPI App",
+        }
+
+        response = requests.get(settings.OPEN_ROUTER_URL, headers=headers, timeout=timeout)
+        response.raise_for_status()
+
+        data = response.json()
+        models_data = data.get("data", [])
+
+        if filters is not None:
+            models_data = cls._apply_filters(models_data, filters)
+
+        if pagination:
+            models_data = cls._apply_pagination(models_data, pagination)
+
+        validated_models = [cls.pydantic_model(**model_data) for model_data in models_data]
+
+        return validated_models
+
+    @classmethod
+    @handle_openrouter_errors
+    def generate_text(cls, query: RequestSchemaType, timeout: int = 30) -> ResponseSchemaType:
+        """
+        Отправляет запрос в OpenRouter и возвращает текст ответа модели.
+        """
+        url = "https://openrouter.ai/api/v1/chat/completions"
+
+        headers = {
+            "Authorization": f"Bearer {settings.OPEN_ROUTER_API_KEY}",
+            "HTTP-Referer": settings.OPEN_ROUTER_URL,
+            "X-Title": "My FastAPI App",
+            "Content-Type": "application/json",
+        }
+
+        payload = {"model": query.model, "messages": [{"role": "user", "content": query.prompt}]}
+
+        response = requests.post(url, headers=headers, json=payload, timeout=timeout)
+        response.raise_for_status()
+        data = response.json()
+        return data
