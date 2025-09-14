@@ -24,7 +24,7 @@ def handle_openrouter_errors(func):
         except requests.exceptions.HTTPError as e:
             raise OpenRouterHTTPException(str(e))
         except requests.exceptions.RequestException as e:
-            raise OpenRouterUnavailableException(str(e))
+            raise OpenRouterUnavailableException()
         except (KeyError, IndexError, ValueError) as e:
             raise OpenRouterResponseParseException(str(e))
         except Exception as e:

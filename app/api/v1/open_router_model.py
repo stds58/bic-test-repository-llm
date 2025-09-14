@@ -32,12 +32,12 @@ def get_fullmodels(
 
 
 @router.post("/generate", summary="Get full response from ai", response_model=str)
-def generate_text(request: GenerateRequest = Depends()) -> str:
+def generate_text(request: GenerateRequest) -> str:
     result = generate_text_item(query=request)
     return result
 
 
 @router.post("/fullgenerate", summary="Get only text response from ai", response_model=GenerateResponse)
-def fullgenerate_text(request: GenerateRequest = Depends()) -> GenerateResponse:
+def fullgenerate_text(request: GenerateRequest) -> GenerateResponse:
     result = generate_fulltext_item(query=request)
     return result

@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from app.api.v1.base_router import v1_router
 from app.core.config import settings
-from app.utils.logger import setup_logging
+from logs.logger import setup_logging
 
 
 logger = setup_logging()

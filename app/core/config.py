@@ -4,6 +4,7 @@
 from functools import lru_cache
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 
 
 load_dotenv()
@@ -16,8 +17,7 @@ class Settings(BaseSettings):
     DEBUG: bool
     SESSION_MIDDLEWARE_SECRET_KEY: str
 
-    class Config:  # pylint: disable=too-few-public-methods
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")
 
 
 @lru_cache()
