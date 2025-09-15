@@ -101,7 +101,11 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
             "Content-Type": "application/json",
         }
 
-        payload = {"model": query.model, "messages": [{"role": "user", "content": query.prompt}]}
+        payload = {
+            "model": query.model,
+            "messages": [{"role": "user", "content": query.prompt}],
+            "max_tokens": query.max_tokens
+        }
 
         response = requests.post(url, headers=headers, json=payload, timeout=timeout)
         response.raise_for_status()
