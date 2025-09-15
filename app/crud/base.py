@@ -4,6 +4,7 @@ from pydantic import BaseModel as PydanticModel
 from app.core.config import settings
 from app.schemas.base import PaginationParams
 from app.exceptions.exeption_wrapper import handle_openrouter_errors
+from app.exceptions.retry_wrapper import exponential_retry_wrapper
 
 
 # pylint: disable-next=no-name-in-module,invalid-name
@@ -55,6 +56,7 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
 
     @classmethod
     @handle_openrouter_errors
+    @exponential_retry_wrapper
     def find_many(
         cls,
         filters: Optional[FilterSchemaType] = None,
@@ -85,6 +87,7 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
 
     @classmethod
     @handle_openrouter_errors
+    @exponential_retry_wrapper
     def generate_text(cls, query: RequestSchemaType, timeout: int = 30) -> ResponseSchemaType:
         """
         Отправляет запрос в OpenRouter и возвращает текст ответа модели.

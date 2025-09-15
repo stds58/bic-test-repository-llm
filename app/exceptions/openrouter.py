@@ -11,6 +11,9 @@ class OpenRouterHTTPException(CustomHTTPException):
     status_code = status.HTTP_502_BAD_GATEWAY
     detail = "Ошибка HTTP при запросе к OpenRouter API"
 
+class OpenRouterRateLimitException(CustomHTTPException):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    detail = "Превышен лимит запросов к OpenRouter API. Попробуйте позже."
 
 class OpenRouterResponseParseException(CustomHTTPException):
     status_code = status.HTTP_502_BAD_GATEWAY

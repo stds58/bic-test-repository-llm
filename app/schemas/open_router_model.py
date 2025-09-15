@@ -75,6 +75,7 @@ class SShortOpenRouterFilter(BaseFilter):
 class GenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, description="Текст запроса к модели")
     model: str = Field(..., min_length=1, description="ID модели, например: 'meta-llama/llama-3-8b-instruct:free'")
+    max_tokens: int = 512
 
 
 class Message(BaseModel):
