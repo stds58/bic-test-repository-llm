@@ -1,15 +1,6 @@
-"""
-https://fastapi.tiangolo.com/ru/tutorial/testing/#_5
-"""
-# from .base_test import BaseAPITest
-# from fastapi.testclient import TestClient
-# from app.main import app
-import importlib
 from app.core.config import settings
 from app.schemas.open_router_model import ShortOpenRouterModel, BaseOpenRouterModel
 from .base_test import BaseAPITest
-#client = TestClient(app)
-
 
 
 class TestOpenRouterAPI(BaseAPITest):
