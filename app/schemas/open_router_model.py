@@ -1,6 +1,7 @@
 import json
 from typing import Optional, List
 from pydantic import Field
+from fastapi import File, UploadFile, Form
 from app.schemas.base import BaseFilter, BaseModel
 
 
@@ -75,7 +76,7 @@ class SShortOpenRouterFilter(BaseFilter):
 class GenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, description="Текст запроса к модели")
     model: str = Field(..., min_length=1, description="ID модели, например: 'meta-llama/llama-3-8b-instruct:free'")
-    max_tokens: int = 512
+    max_tokens: int = Form(512)
 
 
 class Message(BaseModel):
@@ -108,3 +109,16 @@ class GenerateResponse(BaseModel):
     created: int
     choices: List[Choice]
     usage: Usage
+
+
+class CreateBenchMark(BaseModel):
+    prompt_file: UploadFile = File(...),
+    model: str = Form(...),
+    runs: int = Form(5)
+
+
+class BenchmarkResult(BaseModel):
+    avg: float
+    min: float
+    max: float
+    std_dev: float

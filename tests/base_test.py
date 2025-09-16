@@ -6,6 +6,8 @@ from app.main import app
 
 class BaseAPITest:
     """Базовый класс для всех API-тестов"""
+    def __init__(self):
+        self.prefix = 'api'
 
     @classmethod
     def setup_class(cls):

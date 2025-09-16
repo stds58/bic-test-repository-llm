@@ -15,12 +15,9 @@ def short_find_many_item(filters: SOpenRouterFilter, pagination: PaginationParam
 
 
 def generate_text_item(query: GenerateRequest):
-    start = time.time()
     items = OpenRouterModelService.generate_text(query=query)
     response = items.get("choices")[0].get("message").get("content")
-    prompt_tokens = items.get("usage").get("prompt_tokens")
-    latency_seconds = time.time() - start
-    return {"response": response, "tokens_used": prompt_tokens, "latency_seconds": latency_seconds}
+    return response
 
 
 def generate_fulltext_item(query: GenerateRequest):
