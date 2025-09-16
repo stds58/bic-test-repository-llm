@@ -14,7 +14,7 @@ class TestOpenRouterAPI(BaseAPITest):
             http_error.response = mock_response
             mock_response.raise_for_status.side_effect = http_error
             mock_get.return_value = mock_response
-            response = self.client.get("/api/models", params={"page": 1, "per_page": 5})
+            response = self.client.get(f"/{self.prefix}/models", params={"page": 1, "per_page": 5})
             assert response.status_code in (429,), f"Ожидался 429, получен {response.status_code}"
 
 
