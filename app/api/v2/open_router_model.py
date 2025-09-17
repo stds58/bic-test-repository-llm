@@ -11,7 +11,7 @@ from app.schemas.open_router_model import (
     BenchmarkResult,
 )
 from app.schemas.base import PaginationParams
-from app.services.open_router_model_level2 import (find_many_item, generate_text_item, generate_fulltext_item,
+from app.services.open_router_model_level2 import (find_many_item, benchmark_model_call, call_model_raw,
                                                    generate_benchmark)
 
 
@@ -36,17 +36,17 @@ def get_fullmodels(
 
 @router.post("/generate", summary="Get full response from ai", response_model=dict)
 def generate_text(request: GenerateRequest) -> dict:
-    result = generate_text_item(query=request)
+    result = benchmark_model_call(query=request)
     return result
 
 
 @router.post("/fullgenerate", summary="Get only text response from ai", response_model=GenerateResponse)
 def fullgenerate_text(request: GenerateRequest) -> GenerateResponse:
-    result = generate_fulltext_item(query=request)
+    result = call_model_raw(query=request)
     return result
 
 
-@router.post("/benchmark", summary="Test api ai", response_model=BenchmarkResult)
+@router.post("/benchmark", summary="Test api ai", response_model=List[BenchmarkResult])
 async def generate_benchmarks(request: CreateBenchMark = Depends()) -> BenchmarkResult:
     result = await generate_benchmark(query=request)
     return result

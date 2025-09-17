@@ -55,18 +55,7 @@ class SOpenRouterFilter(BaseFilter):
     created: Optional[int] = None
     description: Optional[str] = None
     context_length: Optional[int] = None
-    top_provider_json: Optional[str] = Field(None, alias="top_provider")
     per_request_limits: Optional[str] = None
-
-    @property
-    def top_provider(self) -> Optional[TopProvider]:
-        """
-        Это работает, но не рекомендуется для GET-запросов — URL становится громоздким, и это нарушает REST-конвенции.
-        """
-        if self.top_provider_json:
-            data = json.loads(self.top_provider_json)
-            return TopProvider(**data)
-        return None
 
 
 class SShortOpenRouterFilter(BaseFilter):
@@ -114,10 +103,16 @@ class GenerateResponse(BaseModel):
 class CreateBenchMark(BaseModel):
     prompt_file: UploadFile = File(...),
     model: str = Form(...),
-    runs: int = Form(5)
+    runs: int = Field(default=5, gt=0, description="Количество тестов должно быть больше 0")
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class BenchmarkResult(BaseModel):
+    model: str
+    prompt: str
+    runs: int
     avg: float
     min: float
     max: float

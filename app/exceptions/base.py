@@ -54,3 +54,9 @@ class CustomInternalServerException(CustomHTTPException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     detail = "Внутренняя ошибка сервера"
     log_func = logger.error
+
+
+class CSVExportException(CustomHTTPException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Ошибка при экспорте результатов в CSV файл"
+    log_func = logger.error

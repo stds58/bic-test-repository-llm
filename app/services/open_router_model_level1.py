@@ -15,11 +15,11 @@ def short_find_many_item(filters: SOpenRouterFilter, pagination: PaginationParam
 
 
 def generate_text_item(query: GenerateRequest):
-    items = OpenRouterModelService.generate_text(query=query)
+    items = OpenRouterModelService.call_openrouter_api(query=query)
     response = items.get("choices")[0].get("message").get("content")
     return response
 
 
 def generate_fulltext_item(query: GenerateRequest):
-    items = OpenRouterModelService.generate_text(query=query)
+    items = OpenRouterModelService.call_openrouter_api(query=query)
     return items

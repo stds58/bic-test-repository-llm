@@ -90,7 +90,7 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
     @classmethod
     @handle_openrouter_errors
     @exponential_retry_wrapper
-    def generate_text(cls, query: RequestSchemaType, timeout: int = 30) -> ResponseSchemaType:
+    def call_openrouter_api(cls, query: RequestSchemaType, timeout: int = 30) -> ResponseSchemaType:
         """
         Отправляет запрос в OpenRouter и возвращает текст ответа модели.
         """
@@ -113,63 +113,3 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
         response.raise_for_status()
         data = response.json()
         return data
-
-    # @classmethod
-    # @handle_openrouter_errors
-    # @exponential_retry_wrapper
-    # async def generate_benchmark(cls, query: RequestSchemaType) -> ResponseSchemaType:
-    #     """
-    #         Запускает бенчмарк: для каждого промпта из файла делает N прогонов и замеряет latency.
-    #         Сохраняет сырые данные в benchmark_results.csv.
-    #         Возвращает агрегированную статистику.
-    #     """
-    #     from fastapi import HTTPException
-    #     if not query.prompt_file.filename.endswith(".txt"):
-    #         raise HTTPException(status_code=400, detail="Только .txt файлы разрешены")
-    #
-    #         # Читаем промпты из файла
-    #     content = await query.prompt_file.read()
-    #     prompts = content.decode("utf-8").strip().splitlines()
-    #     if not prompts:
-    #         raise HTTPException(status_code=400, detail="Файл пуст")
-    #
-    #     # Подготовка CSV
-    #     csv_filename = "benchmark_results.csv"
-    #     csv_fieldnames = ["prompt", "run", "latency_seconds", "model", "error"]
-    #
-    #     with open(csv_filename, mode="w", newline="", encoding="utf-8") as csvfile:
-    #         writer = csv.DictWriter(csvfile, fieldnames=csv_fieldnames)
-    #         writer.writeheader()
-    #
-    #         run = None
-    #         model = None
-    #         error = None
-    #         latency = None
-    #
-    #         for prompt in prompts:
-    #             query = GenerateRequest(
-    #                 prompt=prompt,
-    #                 model="nvidia/nemotron-nano-9b-v2:free",
-    #                 max_tokens=50
-    #             )
-    #             data = BaseAPIService.generate_text(query=query)
-    #             print('data======== ',data)
-    #             # Сохраняем строку в CSV
-    #             writer.writerow({
-    #                 "prompt": prompt,
-    #                 "run": run,
-    #                 "latency_seconds": round(latency, 4) if latency is not None else None,
-    #                 "model": query.model,
-    #                 "error": error
-    #             })
-    #
-    #     result = {
-    #         "avg_latency": 1.1,
-    #         "min_latency": 1.1,
-    #         "max_latency": 1.1,
-    #         "std_dev": 1.1,
-    #         "total_prompts": 1,
-    #         "total_runs": 2
-    #     }
-    #     return result
-
