@@ -1,4 +1,5 @@
 import time
+from typing import Generator
 from app.crud.open_router_model import OpenRouterModelService
 from app.schemas.open_router_model import SOpenRouterFilter, GenerateRequest, CreateBenchMark, BenchmarkResult
 from app.schemas.base import PaginationParams
@@ -58,3 +59,10 @@ async def generate_benchmark(query: CreateBenchMark):
     export_benchmark_to_csv(benchmark_results)
 
     return benchmark_results
+
+
+
+def stream_model_call(query: GenerateRequest) -> Generator[dict, None, None]:
+    yield from OpenRouterModelService.call_openrouter_api_stream(query)
+
+

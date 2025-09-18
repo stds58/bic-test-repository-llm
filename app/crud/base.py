@@ -7,6 +7,11 @@ from app.schemas.open_router_model import GenerateRequest
 from app.exceptions.exeption_wrapper import handle_openrouter_errors
 from app.exceptions.retry_wrapper import exponential_retry_wrapper
 import csv
+import time
+import uuid
+import json
+from typing import Generator
+import httpx
 
 
 # pylint: disable-next=no-name-in-module,invalid-name
@@ -113,3 +118,64 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
         response.raise_for_status()
         data = response.json()
         return data
+
+    @classmethod
+    @handle_openrouter_errors
+    @exponential_retry_wrapper
+    def call_openrouter_api_stream(cls, query: RequestSchemaType, timeout: int = 30) -> Generator[dict, None, None]:
+        """
+        Отправляет запрос в OpenRouter API в режиме стриминга.
+        """
+        url = "https://openrouter.ai/api/v1/chat/completions"
+
+        headers = {
+            "Authorization": f"Bearer {settings.OPEN_ROUTER_API_KEY}",
+            "HTTP-Referer": settings.OPEN_ROUTER_URL,
+            "X-Title": "My FastAPI App",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "model": query.model,
+            "messages": [{"role": "user", "content": query.prompt}],
+            "max_tokens": query.max_tokens,
+            "stream": True,
+        }
+
+        request_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+        created_at = int(time.time())
+
+        response = requests.post(url, headers=headers, json=payload, stream=True, timeout=timeout)
+        response.raise_for_status()
+
+        for line in response.iter_lines():
+            if line:
+                decoded_line = line.decode('utf-8').strip()
+                if decoded_line == "[DONE]":
+                    break
+
+                # Обрабатываем как с префиксом "data: ", так и без
+                if decoded_line.startswith("data: "):
+                    data_str = decoded_line[len("data: "):]
+                else:
+                    data_str = decoded_line
+
+                if data_str:
+                    try:
+                        chunk = json.loads(data_str)
+                        if "choices" in chunk and len(chunk["choices"]) > 0:
+                            chunk.setdefault("id", request_id)
+                            chunk.setdefault("created", created_at)
+                            chunk.setdefault("model", query.model)
+                        yield chunk
+                    except json.JSONDecodeError:
+                        continue
+
+        # Финальный чанк
+        yield {
+            "id": request_id,
+            "object": "chat.completion.chunk",
+            "created": created_at,
+            "model": query.model,
+            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]
+        }

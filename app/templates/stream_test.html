@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stream Test — POST + fetch</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/stream_test.css">
+</head>
+<body>
+    <h1>Тестирование стриминга через OpenRouter</h1>
+
+    <div class="form-group">
+        <label for="prompt">Промпт:</label>
+        <textarea id="prompt" rows="3" placeholder="Введите ваш запрос...">Привет! Расскажи короткую сказку про хитрую лису и доверчивого волка.</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="model">Модель:</label>
+        <input type="text" id="model" value="cognitivecomputations/dolphin-mistral-24b-venice-edition:free" />
+    </div>
+
+    <div class="form-group">
+        <label for="max_tokens">Макс. токенов:</label>
+        <input type="number" id="max_tokens" value="512" min="1" max="4096" />
+    </div>
+
+    <button id="startBtn">Начать генерацию</button>
+    <div id="output">Нажмите кнопку, чтобы начать...</div>
+
+    <script src="/static/js/stream_test.js"></script>
+</body>
+</html>
