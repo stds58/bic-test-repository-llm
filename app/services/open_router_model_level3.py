@@ -56,14 +56,14 @@ async def generate_benchmark(query: CreateBenchMark):
         #     func=lambda: benchmark_model_call(query=test_query)
         # )
         result = {
-        "model": "model",
-        "prompt": "prompt",
-        "runs": 3,
-        "avg": 2.9,
-        "min": 0.5,
-        "max": 5.0,
-        "std_dev": 3.4
-    }
+            "model": query.model,
+            "prompt": prompt,
+            "runs": query.runs,
+            "avg": 2.9,
+            "min": 0.5,
+            "max": 5.0,
+            "std_dev": 3.4
+        }
         benchmark_results.append(result)
     export_benchmark_to_csv(benchmark_results)
 
