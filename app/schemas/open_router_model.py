@@ -118,3 +118,4 @@ class BenchmarkResult(BaseModel):
     min: float
     max: float
     std_dev: float
+    visualize: Optional[bool] = False
