@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenRouter Benchmark UI</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/benchmark_ui.css">
+</head>
+<body>
+    <h1>OpenRouter Benchmark Tool</h1>
+
+    <div class="form-container">
+        <form id="benchmarkForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="prompt_file">Файл с промптами (.txt):</label>
+                <input type="file" id="prompt_file" name="prompt_file" accept=".txt" required />
+            </div>
+
+            <div class="form-group">
+                <label for="model">Модель:</label>
+                <input type="text" id="model" name="model" value="cognitivecomputations/dolphin-mistral-24b-venice-edition:free" required />
+            </div>
+
+            <div class="form-group">
+                <label for="runs">Количество прогонов на промпт:</label>
+                <input type="number" id="runs" name="runs" value="3" min="1" max="10" required />
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="visualize" name="visualize" checked />
+                    Показать результаты в виде HTML-таблицы
+                </label>
+            </div>
+
+            <button type="submit">Запустить бенчмарк</button>
+        </form>
+    </div>
+
+    <div id="results"></div>
+
+    <script src="/static/js/benchmark_ui.js"></script>
+</body>
+</html>

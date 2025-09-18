@@ -105,6 +105,7 @@ class CreateBenchMark(BaseModel):
     prompt_file: UploadFile = File(...)
     model: str = Field(..., min_length=1, description="ID модели, например: 'meta-llama/llama-3-8b-instruct:free'")
     runs: int = Field(default=5, gt=0, description="Количество тестов должно быть больше 0")
+    visualize: bool = Field(default=False, description="Если true, возвращает html таблицу, иначе json")
 
     class Config:
         arbitrary_types_allowed = True
@@ -118,4 +119,3 @@ class BenchmarkResult(BaseModel):
     min: float
     max: float
     std_dev: float
-    visualize: Optional[bool] = False

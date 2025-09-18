@@ -15,6 +15,8 @@ from app.schemas.open_router_model import (
 from app.schemas.base import PaginationParams
 from app.services.open_router_model_level3 import (find_many_item, benchmark_model_call, call_model_raw,
                                                    generate_benchmark, stream_model_call)
+from fastapi import File, Form, UploadFile
+
 
 
 router = APIRouter()
@@ -83,7 +85,23 @@ def fullgenerate_text(request: GenerateRequest) -> GenerateResponse:
     return result
 
 
-@router.post("/benchmark", summary="Test api ai", response_model=List[BenchmarkResult])
-async def generate_benchmarks(request: CreateBenchMark = Depends()) -> BenchmarkResult:
+# @router.post("/benchmark", summary="Test api ai", response_model=List[BenchmarkResult])
+# async def generate_benchmarks(request: CreateBenchMark = Depends()) -> BenchmarkResult:
+#     result = await generate_benchmark(query=request)
+#     return result
+
+@router.post("/benchmark", summary="Test api ai")
+async def generate_benchmarks(
+    prompt_file: UploadFile = File(...),
+    model: str = Form(...),
+    runs: int = Form(5),
+    visualize: bool = Form(False)
+):
+    request = CreateBenchMark(
+        prompt_file=prompt_file,
+        model=model,
+        runs=runs,
+        visualize=visualize
+    )
     result = await generate_benchmark(query=request)
     return result

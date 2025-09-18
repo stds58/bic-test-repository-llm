@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         outputDiv.innerText = "Подключение к модели...\n";
 
         try {
-            const response = await fetch("/api/generate", {
+            const response = await fetch("/api/benchmark", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

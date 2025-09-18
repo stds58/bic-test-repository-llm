@@ -17,3 +17,12 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 @router.get("/stream_test", response_class=HTMLResponse, include_in_schema=False)
 async def stream_test_page(request: Request):
     return templates.TemplateResponse("stream_test.html", {"request": request})
+
+
+@router.get("/benchmark_ui", response_class=HTMLResponse, include_in_schema=False)
+async def benchmark_ui_page(request: Request):
+    """
+    Страница для запуска бенчмарка через UI.
+    Подключается к /api/benchmark.
+    """
+    return templates.TemplateResponse("benchmark_ui.html", {"request": request})
