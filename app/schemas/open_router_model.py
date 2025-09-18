@@ -65,7 +65,8 @@ class SShortOpenRouterFilter(BaseFilter):
 class GenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, description="Текст запроса к модели")
     model: str = Field(..., min_length=1, description="ID модели, например: 'meta-llama/llama-3-8b-instruct:free'")
-    max_tokens: int = Form(512)
+    max_tokens: int = Field(512, ge=1, description="Максимальное количество токенов для генерации")
+    stream: bool = Field(False, description="Потоковая передача ответа")
 
 
 class Message(BaseModel):
@@ -101,8 +102,8 @@ class GenerateResponse(BaseModel):
 
 
 class CreateBenchMark(BaseModel):
-    prompt_file: UploadFile = File(...),
-    model: str = Form(...),
+    prompt_file: UploadFile = File(...)
+    model: str = Field(..., min_length=1, description="ID модели, например: 'meta-llama/llama-3-8b-instruct:free'")
     runs: int = Field(default=5, gt=0, description="Количество тестов должно быть больше 0")
 
     class Config:
