@@ -13,9 +13,9 @@ def exponential_retry_wrapper(func):
         for attempt in range(max_retries + 1):
             try:
                 return func(*args, **kwargs)
-            except Exception as e:
+            except Exception:
                 if attempt < max_retries:
-                    wait_time = (2 ** attempt) + 1
+                    wait_time = (2**attempt) + 1
                     time.sleep(wait_time)
                     continue
                 else:

@@ -71,7 +71,6 @@ class BaseAPITest:
             },
         )
         assert response.status_code == 502
-        data = response.json()
         assert response.json() == {
             'detail': '402 Client Error: Payment Required for url: https://openrouter.ai/api/v1/chat/completions'
         }
@@ -86,7 +85,6 @@ class BaseAPITest:
             },
         )
         assert response.status_code == 502
-        data = response.json()
         assert response.json() == {
             'detail': '400 Client Error: Bad Request for url: https://openrouter.ai/api/v1/chat/completions'
         }

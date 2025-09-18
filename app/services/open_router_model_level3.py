@@ -1,7 +1,9 @@
 import time
+from functools import partial
 from typing import Generator
+from fastapi import HTTPException
 from app.crud.open_router_model import OpenRouterModelService
-from app.schemas.open_router_model import SOpenRouterFilter, GenerateRequest, CreateBenchMark, BenchmarkResult
+from app.schemas.open_router_model import SOpenRouterFilter, GenerateRequest, CreateBenchMark
 from app.schemas.base import PaginationParams
 from app.utils.benchmark_statistics import calculate_latency_stats
 from app.utils.csv_exporter import export_benchmark_to_csv
@@ -33,11 +35,10 @@ def call_model_raw(query: GenerateRequest):
 
 async def generate_benchmark(query: CreateBenchMark):
     """
-        Запускает бенчмарк: для каждого промпта из файла делает N прогонов и замеряет latency.
-        Сохраняет сырые данные в benchmark_results.csv.
-        Возвращает агрегированную статистику.
+    Запускает бенчмарк: для каждого промпта из файла делает N прогонов и замеряет latency.
+    Сохраняет сырые данные в benchmark_results.csv.
+    Возвращает агрегированную статистику.
     """
-    from fastapi import HTTPException
     if not query.prompt_file.filename.endswith(".txt"):
         raise HTTPException(status_code=400, detail="Только .txt файлы разрешены")
 
@@ -48,30 +49,24 @@ async def generate_benchmark(query: CreateBenchMark):
 
     benchmark_results = []
     for prompt in prompts:
-        test_query = GenerateRequest(prompt=prompt,model=query.model,max_tokens=50)
-        # result = calculate_latency_stats(
-        #     model=query.model,
-        #     prompt=prompt,
-        #     runs=query.runs,
-        #     func=lambda: benchmark_model_call(query=test_query)
-        # )
-        result = {
-            "model": query.model,
-            "prompt": prompt,
-            "runs": query.runs,
-            "avg": 2.9,
-            "min": 0.5,
-            "max": 5.0,
-            "std_dev": 3.4
-        }
+        test_query = GenerateRequest(prompt=prompt, model=query.model, max_tokens=50)
+        func = partial(benchmark_model_call, query=test_query)
+        result = calculate_latency_stats(model=query.model, prompt=prompt, runs=query.runs, func=func)
+        # """Заглушка"""
+        # result = {
+        #     "model": query.model,
+        #     "prompt": prompt,
+        #     "runs": query.runs,
+        #     "avg": 2.9,
+        #     "min": 0.5,
+        #     "max": 5.0,
+        #     "std_dev": 3.4
+        # }
         benchmark_results.append(result)
-    export_benchmark_to_csv(benchmark_results)
+    filename = export_benchmark_to_csv(benchmark_results)
 
-    return benchmark_results
-
+    return {"results": benchmark_results, "csv_filename": filename}
 
 
 def stream_model_call(query: GenerateRequest) -> Generator[dict, None, None]:
     yield from OpenRouterModelService.call_openrouter_api_stream(query)
-
-

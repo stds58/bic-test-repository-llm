@@ -78,6 +78,36 @@ button:disabled {
     width: 80%;
     padding: 40px;
     overflow-y: auto;
+    position: relative;
+}
+.download-btn {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    z-index: 10;
+    /* Убираем растягивание */
+    width: auto;
+    min-width: 120px;
+}
+
+.download-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.download-btn:active {
+    transform: translateY(0);
 }
 
 #results {
@@ -141,5 +171,11 @@ button:disabled {
     .main-content {
         width: 100%;
         padding: 20px;
+    }
+    .download-btn {
+        top: 20px;
+        right: 20px;
+        font-size: 12px;
+        padding: 8px 16px;
     }
 }

@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const modelInput = document.getElementById('model');
         const runsInput = document.getElementById('runs');
         const visualizeCheckbox = document.getElementById('visualize');
+        const downloadBtn = document.getElementById('downloadCsvBtn');
+        downloadBtn.style.display = 'none';
 
         if (fileInput.files.length > 0) {
             formData.append('prompt_file', fileInput.files[0]);
@@ -19,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('visualize', visualizeCheckbox.checked ? "true" : "false");
 
         const button = form.querySelector('button');
+        const resultsDiv = document.getElementById('results');
         button.disabled = true;
         resultsDiv.innerHTML = '<p>Запускаем бенчмарк... Это может занять несколько минут.</p>';
 
@@ -32,7 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const data = await response.json();
+            const responseData = await response.json();
+            const data = responseData.results;
+            const csvFilename = responseData.csv_filename;
 
             // Генерируем таблицу на фронтенде
             if (visualizeCheckbox.checked) {
@@ -73,10 +78,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
 
                 resultsDiv.innerHTML = tableHtml;
+                downloadBtn.style.display = 'block';
+                downloadBtn.onclick = async function() {
+                    try {
+                        const downloadUrl = `/api/download_csv?filename=${csvFilename}`;
+                        const response = await fetch(downloadUrl);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = csvFilename;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    } catch (err) {
+                        alert('Не удалось скачать файл: ' + err.message);
+                        console.error(err);
+                    }
+                };
             } else {
-                // Показываем JSON
                 resultsDiv.innerHTML = `
-                    <h2>📄 Результаты (JSON)</h2>
+                    <h2>Результаты (JSON)</h2>
                     <pre>${JSON.stringify(data, null, 2)}</pre>
                 `;
             }

@@ -11,8 +11,12 @@ from app.schemas.open_router_model import (
     BenchmarkResult,
 )
 from app.schemas.base import PaginationParams
-from app.services.open_router_model_level2 import (find_many_item, benchmark_model_call, call_model_raw,
-                                                   generate_benchmark)
+from app.services.open_router_model_level2 import (
+    find_many_item,
+    benchmark_model_call,
+    call_model_raw,
+    generate_benchmark,
+)
 
 
 router = APIRouter()

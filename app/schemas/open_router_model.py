@@ -1,7 +1,6 @@
-import json
 from typing import Optional, List
 from pydantic import Field
-from fastapi import File, UploadFile, Form
+from fastapi import File, UploadFile
 from app.schemas.base import BaseFilter, BaseModel
 
 
@@ -107,6 +106,7 @@ class CreateBenchMark(BaseModel):
     runs: int = Field(default=5, gt=0, description="Количество тестов должно быть больше 0")
     visualize: bool = Field(default=False, description="Если true, возвращает html таблицу, иначе json")
 
+    # pylint: disable-next=too-few-public-methods
     class Config:
         arbitrary_types_allowed = True
 

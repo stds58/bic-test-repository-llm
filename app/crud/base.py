@@ -1,17 +1,13 @@
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, List, Optional, TypeVar, Generator
+import time
+import uuid
+import json
 import requests
 from pydantic import BaseModel as PydanticModel
 from app.core.config import settings
 from app.schemas.base import PaginationParams
-from app.schemas.open_router_model import GenerateRequest
 from app.exceptions.exeption_wrapper import handle_openrouter_errors
 from app.exceptions.retry_wrapper import exponential_retry_wrapper
-import csv
-import time
-import uuid
-import json
-from typing import Generator
-import httpx
 
 
 # pylint: disable-next=no-name-in-module,invalid-name
@@ -111,7 +107,7 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
         payload = {
             "model": query.model,
             "messages": [{"role": "user", "content": query.prompt}],
-            "max_tokens": query.max_tokens
+            "max_tokens": query.max_tokens,
         }
 
         response = requests.post(url, headers=headers, json=payload, timeout=timeout)
@@ -150,13 +146,13 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
 
         for line in response.iter_lines():
             if line:
-                decoded_line = line.decode('utf-8').strip()
+                decoded_line = line.decode("utf-8").strip()
                 if decoded_line == "[DONE]":
                     break
 
                 # Обрабатываем как с префиксом "data: ", так и без
                 if decoded_line.startswith("data: "):
-                    data_str = decoded_line[len("data: "):]
+                    data_str = decoded_line[len("data: ") :]
                 else:
                     data_str = decoded_line
 
@@ -177,5 +173,5 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
             "object": "chat.completion.chunk",
             "created": created_at,
             "model": query.model,
-            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]
+            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
         }

@@ -3,7 +3,7 @@ from typing import Callable
 import statistics
 
 
-def calculate_latency_stats(model:str, prompt:str, runs:int, func: Callable[[], dict]) -> dict:
+def calculate_latency_stats(model: str, prompt: str, runs: int, func: Callable[[], dict]) -> dict:
     latencies = []
     for i in range(runs):
         data = func()
@@ -22,6 +22,6 @@ def calculate_latency_stats(model:str, prompt:str, runs:int, func: Callable[[], 
         "avg": avg_latency,
         "min": min_latency,
         "max": max_latency,
-        "std_dev": std_dev
+        "std_dev": std_dev,
     }
     return result

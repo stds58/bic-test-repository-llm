@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="/static/css/benchmark_ui.css">
 </head>
 <body>
-    <!-- Левая колонка: 20% -->
     <div class="sidebar">
         <h1>OpenRouter Benchmark Tool</h1>
         <div class="form-container">
@@ -37,13 +36,15 @@
             </form>
         </div>
     </div>
-
-    <!-- Правая колонка: 80% -->
     <div class="main-content">
-        <div id="results">
-            <p>Результаты бенчмарка появятся здесь.</p>
-        </div>
+    <button id="downloadCsvBtn" class="download-btn" style="display: none;">
+        Скачать CSV
+    </button>
+
+    <div id="results">
+        <p>Результаты бенчмарка появятся здесь.</p>
     </div>
+</div>
 
     <script src="/static/js/benchmark_ui.js"></script>
 </body>

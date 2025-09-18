@@ -1,4 +1,3 @@
-import time
 from app.crud.open_router_model import OpenRouterModelService
 from app.schemas.open_router_model import SOpenRouterFilter, GenerateRequest
 from app.schemas.base import PaginationParams
