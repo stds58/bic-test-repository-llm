@@ -1,5 +1,4 @@
 import time
-from pathlib import Path
 from functools import partial
 from typing import Generator
 from fastapi import HTTPException
@@ -14,11 +13,6 @@ from app.utils.stubs import DUMMY_BENCHMARK_RESULT
 def find_many_item(filters: SOpenRouterFilter, pagination: PaginationParams):
     items = OpenRouterModelService.find_many(filters=filters, pagination=pagination)
     return items
-
-
-# def short_find_many_item(filters: SOpenRouterFilter, pagination: PaginationParams):
-#     items = OpenRouterModelService.find_many(filters=filters, pagination=pagination)
-#     return items
 
 
 def benchmark_model_call(query: GenerateRequest):

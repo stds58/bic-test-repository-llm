@@ -1,5 +1,4 @@
 import csv
-from pathlib import Path
 from app.core.config import settings
 from app.exceptions.base import CSVExportException
 
