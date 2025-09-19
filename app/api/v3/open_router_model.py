@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
 from fastapi.responses import StreamingResponse, FileResponse
+from app.core.config import settings
 from app.schemas.open_router_model import (
     BaseOpenRouterModel,
     ShortOpenRouterModel,
@@ -22,6 +23,8 @@ from app.services.open_router_model_level3 import (
 )
 
 
+EXPORT_DIR = settings.BENCHMARK_EXPORT_DIR
+
 router = APIRouter()
 
 
@@ -39,12 +42,6 @@ def get_fullmodels(
 ) -> BaseOpenRouterModel:
     items = find_many_item(filters=filters, pagination=pagination)
     return items
-
-
-# @router.post("/generate", summary="Get full response from ai", response_model=dict)
-# def generate_text(request: GenerateRequest) -> dict:
-#     result = benchmark_model_call(query=request)
-#     return result
 
 
 @router.post("/generate", summary="Get response from AI (supports SSE streaming)")
@@ -79,12 +76,6 @@ def fullgenerate_text(request: GenerateRequest) -> GenerateResponse:
     return result
 
 
-# @router.post("/benchmark", summary="Test api ai", response_model=List[BenchmarkResult])
-# async def generate_benchmarks(request: CreateBenchMark = Depends()) -> BenchmarkResult:
-#     result = await generate_benchmark(query=request)
-#     return result
-
-
 @router.post("/benchmark", summary="Test api ai")
 async def generate_benchmarks(
     prompt_file: UploadFile = File(...), model: str = Form(...), runs: int = Form(5), visualize: bool = Form(False)
@@ -96,7 +87,17 @@ async def generate_benchmarks(
 
 @router.get("/download_csv")
 async def download_csv(filename: str):
-    file_path = Path(filename)
+    file_path = (EXPORT_DIR / filename).resolve()
+
+    if not file_path.is_relative_to(EXPORT_DIR):
+        raise HTTPException(status_code=403, detail="Доступ запрещён")
+
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Файл не найден")
-    return FileResponse(path=file_path, filename=filename, media_type="text/csv")
+
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type="text/csv"
+    )
+

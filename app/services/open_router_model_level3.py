@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 from functools import partial
 from typing import Generator
 from fastapi import HTTPException
@@ -7,6 +8,7 @@ from app.schemas.open_router_model import SOpenRouterFilter, GenerateRequest, Cr
 from app.schemas.base import PaginationParams
 from app.utils.benchmark_statistics import calculate_latency_stats
 from app.utils.csv_exporter import export_benchmark_to_csv
+from app.utils.stubs import DUMMY_BENCHMARK_RESULT
 
 
 def find_many_item(filters: SOpenRouterFilter, pagination: PaginationParams):
@@ -51,17 +53,8 @@ async def generate_benchmark(query: CreateBenchMark):
     for prompt in prompts:
         test_query = GenerateRequest(prompt=prompt, model=query.model, max_tokens=50)
         func = partial(benchmark_model_call, query=test_query)
-        result = calculate_latency_stats(model=query.model, prompt=prompt, runs=query.runs, func=func)
-        # """Заглушка"""
-        # result = {
-        #     "model": query.model,
-        #     "prompt": prompt,
-        #     "runs": query.runs,
-        #     "avg": 2.9,
-        #     "min": 0.5,
-        #     "max": 5.0,
-        #     "std_dev": 3.4
-        # }
+        #result = calculate_latency_stats(model=query.model, prompt=prompt, runs=query.runs, func=func)
+        result = DUMMY_BENCHMARK_RESULT
         benchmark_results.append(result)
     filename = export_benchmark_to_csv(benchmark_results)
 

@@ -1,7 +1,7 @@
 """
 Класс настроек приложения
 """
-
+from pathlib import Path
 from functools import lru_cache
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     LOG_FILE_MAX_SIZE: int
     DEBUG: bool
     SESSION_MIDDLEWARE_SECRET_KEY: str
+
+    BENCHMARK_EXPORT_DIR: Path = Path("./exports").resolve()
 
     model_config = ConfigDict(extra="ignore")
 
