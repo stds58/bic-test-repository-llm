@@ -1,8 +1,9 @@
+from pathlib import Path
 from typing import List
 import json
-from pathlib import Path
-from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, Request
 from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.templating import Jinja2Templates
 from app.core.config import settings
 from app.schemas.open_router_model import (
     BaseOpenRouterModel,
@@ -25,8 +26,13 @@ from app.services.open_router_model_level3 import (
 
 EXPORT_DIR = settings.BENCHMARK_EXPORT_DIR
 
-router = APIRouter()
+V3_DIR = Path(__file__).resolve().parent
+API_DIR = V3_DIR.parent
+APP_DIR = API_DIR.parent
+TEMPLATES_DIR = APP_DIR / "templates"
 
+router = APIRouter()
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 @router.get("/models", summary="Get short models", response_model=List[ShortOpenRouterModel])
 def get_models(
@@ -78,10 +84,24 @@ def fullgenerate_text(request: GenerateRequest) -> GenerateResponse:
 
 @router.post("/benchmark", summary="Test api ai")
 async def generate_benchmarks(
-    prompt_file: UploadFile = File(...), model: str = Form(...), runs: int = Form(5), visualize: bool = Form(False)
+        request: Request,
+        prompt_file: UploadFile = File(...),
+        model: str = Form(...),
+        runs: int = Form(5),
+        visualize: bool = Form(False)
 ):
-    request = CreateBenchMark(prompt_file=prompt_file, model=model, runs=runs, visualize=visualize)
-    result = await generate_benchmark(query=request)
+    benchmark_request = CreateBenchMark(prompt_file=prompt_file, model=model, runs=runs, visualize=visualize)
+    result = await generate_benchmark(query=benchmark_request)
+    if visualize:
+        return templates.TemplateResponse(
+            "benchmark_results.html",
+            {
+                "request": request,
+                "model_name": model,
+                "csv_filename": result["csv_filename"],
+                "results": result["results"]
+            }
+        )
     return result
 
 
@@ -100,4 +120,3 @@ async def download_csv(filename: str):
         filename=filename,
         media_type="text/csv"
     )
-

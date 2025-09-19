@@ -1,6 +1,89 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('benchmarkForm');
     const resultsDiv = document.getElementById('results');
+    const modelSearchInput = document.getElementById('modelSearch');
+    const modelHiddenInput = document.getElementById('model');
+    const modelDropdown = document.getElementById('modelDropdown');
+
+    let allModels = []; // Глобальный массив моделей
+
+    // Загружаем модели
+    fetch('/api/models?per_page=100')
+        .then(response => response.json())
+        .then(models => {
+            allModels = models;
+            // Устанавливаем первую модель по умолчанию
+            if (models.length > 0) {
+                const firstModel = models[0];
+                modelSearchInput.value = firstModel.name || firstModel.id;
+                modelHiddenInput.value = firstModel.id;
+            }
+        })
+        .catch(err => {
+            console.error('Ошибка загрузки моделей:', err);
+            modelSearchInput.placeholder = 'Ошибка загрузки';
+        });
+
+    // Показываем/скрываем дропдаун при фокусе/блюре
+    modelSearchInput.addEventListener('focus', () => {
+        filterModels('');
+        modelDropdown.classList.add('active');
+    });
+
+    modelSearchInput.addEventListener('blur', () => {
+        // Ждём немного, чтобы клик по элементу успел сработать
+        setTimeout(() => {
+            modelDropdown.classList.remove('active');
+        }, 200);
+    });
+
+    // Фильтруем модели при вводе
+    modelSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        filterModels(query);
+    });
+
+    // Фильтрация и рендеринг моделей
+    function filterModels(query) {
+        modelDropdown.innerHTML = '';
+
+        const filteredModels = allModels.filter(model => {
+            const name = (model.name || model.id).toLowerCase();
+            return name.includes(query);
+        });
+
+        if (filteredModels.length === 0) {
+            modelDropdown.innerHTML = '<div class="dropdown-item">Модели не найдены</div>';
+            return;
+        }
+
+        filteredModels.forEach(model => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+
+            // Подсвечиваем совпадения
+            const name = model.name || model.id;
+            const highlightedName = highlightMatch(name, query);
+
+            item.innerHTML = highlightedName;
+            item.dataset.modelId = model.id;
+
+            item.addEventListener('click', () => {
+                modelSearchInput.value = name;
+                modelHiddenInput.value = model.id;
+                modelDropdown.classList.remove('active');
+            });
+
+            modelDropdown.appendChild(item);
+        });
+    }
+
+    // Подсветка совпадений
+    function highlightMatch(text, query) {
+        if (!query) return text;
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<strong>$1</strong>');
+    }
 
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -26,92 +109,49 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsDiv.innerHTML = '<p>Запускаем бенчмарк... Это может занять несколько минут.</p>';
 
         try {
+            // 1. Отправляем POST-запрос на /api/benchmark с формой
             const response = await fetch('/api/benchmark', {
                 method: 'POST',
                 body: formData
             });
 
+            // 2. Проверяем, успешен ли HTTP-ответ (статус 200-299)
             if (!response.ok) {
+                // Если нет — выбрасываем ошибку с кодом и текстом
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
+            // 3. Смотрим Content-Type ответа
+            const contentType = response.headers.get('content-type');
+
+            // 4. Если сервер вернул HTML (visualize=true) — вставляем его как есть
+            if (contentType && contentType.includes('text/html')) {
+                const html = await response.text();
+                resultsDiv.innerHTML = html;
+                return;
+            }
+
+            // 5. Если не HTML — значит, JSON (visualize=false)
             const responseData = await response.json();
             const data = responseData.results;
             const csvFilename = responseData.csv_filename;
 
-            // Генерируем таблицу на фронтенде
-            if (visualizeCheckbox.checked) {
-                let tableHtml = `
-                    <h2>Результаты бенчмарка</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Промпт</th>
-                                <th>Runs</th>
-                                <th>Avg Latency</th>
-                                <th>Min Latency</th>
-                                <th>Max Latency</th>
-                                <th>Std Dev</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                data.forEach((item, index) => {
-                    tableHtml += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td title="${escapeHtml(item.prompt)}">${escapeHtml(truncate(item.prompt, 50))}</td>
-                            <td>${item.runs}</td>
-                            <td>${item.avg.toFixed(3)}s</td>
-                            <td>${item.min.toFixed(3)}s</td>
-                            <td>${item.max.toFixed(3)}s</td>
-                            <td>${item.std_dev.toFixed(3)}s</td>
-                        </tr>
-                    `;
-                });
-
-                tableHtml += `
-                        </tbody>
-                    </table>
-                `;
-
-                resultsDiv.innerHTML = tableHtml;
-                downloadBtn.style.display = 'block';
-                downloadBtn.onclick = async function() {
-                    try {
-                        const downloadUrl = `/api/download_csv?filename=${csvFilename}`;
-                        const response = await fetch(downloadUrl);
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                        }
-
-                        const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = csvFilename;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        document.body.removeChild(a);
-                    } catch (err) {
-                        alert('Не удалось скачать файл: ' + err.message);
-                        console.error(err);
-                    }
-                };
-            } else {
-                resultsDiv.innerHTML = `
-                    <h2>Результаты (JSON)</h2>
-                    <pre>${JSON.stringify(data, null, 2)}</pre>
-                `;
-            }
+            // 6. Показываем JSON в красивом формате
+            resultsDiv.innerHTML = `
+                <h2>Результаты (JSON)</h2>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
 
         } catch (err) {
-            console.error("Ошибка:", err);
-            resultsDiv.innerHTML = `<p style="color: red;">Ошибка: ${err.message}</p>`;
+            // 7. Ловим ЛЮБУЮ ошибку: сеть, сервер, парсинг, логика
+            console.error("Ошибка:", err);  // ← Логируем в консоль для отладки
+            resultsDiv.innerHTML = `
+                <p style="color: red; font-weight: bold;">
+                    Ошибка: ${err.message}
+                </p>
+            `;
         } finally {
+            // 8. Включаем кнопку "Запустить" обратно — даже если была ошибка
             button.disabled = false;
         }
     });

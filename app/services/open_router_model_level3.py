@@ -16,9 +16,9 @@ def find_many_item(filters: SOpenRouterFilter, pagination: PaginationParams):
     return items
 
 
-def short_find_many_item(filters: SOpenRouterFilter, pagination: PaginationParams):
-    items = OpenRouterModelService.find_many(filters=filters, pagination=pagination)
-    return items
+# def short_find_many_item(filters: SOpenRouterFilter, pagination: PaginationParams):
+#     items = OpenRouterModelService.find_many(filters=filters, pagination=pagination)
+#     return items
 
 
 def benchmark_model_call(query: GenerateRequest):

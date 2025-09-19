@@ -13,4 +13,4 @@ class BaseFilter(BaseModel):
 
 class PaginationParams(BaseModel):
     page: Annotated[int, Query(default=1, ge=1)]
-    per_page: Annotated[int, Query(default=10, ge=1, lt=100)]
+    per_page: Annotated[int, Query(default=10, ge=1, lt=101)]

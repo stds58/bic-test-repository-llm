@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Benchmark Results — {{ model_name }}</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/benchmark_results.css">
+</head>
+<body>
+    <h1>Benchmark Results for Model: <br>{{ model_name }}</h1>
+
+    <a href="/api/download_csv?filename={{ csv_filename }}" class="download-btn" download>Скачать CSV</a>
+
+    <table class="benchmark-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Промпт</th>
+                <th>Runs</th>
+                <th>Avg Latency</th>
+                <th>Min Latency</th>
+                <th>Max Latency</th>
+                <th>Std Dev</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in results %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td title="{{ item.prompt }}">{{ item.prompt[:100] + '...' if item.prompt|length > 100 else item.prompt }}</td>
+                <td>{{ item.runs }}</td>
+                <td>{{ "%.3f"|format(item.avg) }}s</td>
+                <td>{{ "%.3f"|format(item.min) }}s</td>
+                <td>{{ "%.3f"|format(item.max) }}s</td>
+                <td>{{ "%.3f"|format(item.std_dev) }}s</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="/api/download_csv?filename={{ csv_filename }}" class="download-btn" download>Скачать CSV</a>
+</body>
+</html>
