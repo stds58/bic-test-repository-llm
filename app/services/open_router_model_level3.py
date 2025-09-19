@@ -47,13 +47,21 @@ async def generate_benchmark(query: CreateBenchMark):
     for prompt in prompts:
         test_query = GenerateRequest(prompt=prompt, model=query.model, max_tokens=50)
         func = partial(benchmark_model_call, query=test_query)
-        #result = calculate_latency_stats(model=query.model, prompt=prompt, runs=query.runs, func=func)
-        result = DUMMY_BENCHMARK_RESULT
+        result = calculate_latency_stats(model=query.model, prompt=prompt, runs=query.runs, func=func)
+        # result = DUMMY_BENCHMARK_RESULT
         benchmark_results.append(result)
     filename = export_benchmark_to_csv(benchmark_results)
 
     return {"results": benchmark_results, "csv_filename": filename}
 
 
-def stream_model_call(query: GenerateRequest) -> Generator[dict, None, None]:
-    yield from OpenRouterModelService.call_openrouter_api_stream(query)
+def stream_model_call(query: GenerateRequest) -> Generator[str, None, None]:
+    """
+    Генератор SSE-событий для стриминга.
+    Возвращает строки в формате SSE, готовые к отправке клиенту.
+    """
+    try:
+        yield from OpenRouterModelService.call_openrouter_api_stream(query)
+    except Exception as e:
+        yield f" [ERROR: {str(e)}]\n\n"
+        yield " [DONE]\n\n"

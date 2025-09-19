@@ -1,4 +1,3 @@
-
 DUMMY_BENCHMARK_RESULT = {
     "model": "query.model",
     "prompt": "prompt",
@@ -6,5 +5,5 @@ DUMMY_BENCHMARK_RESULT = {
     "avg": 2.9,
     "min": 0.5,
     "max": 5.0,
-    "std_dev": 3.4
+    "std_dev": 3.4,
 }

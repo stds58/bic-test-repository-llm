@@ -4,5 +4,5 @@ from app.api.v3.frontend import router as front_router
 
 v3_router = APIRouter(prefix="")
 
-v3_router.include_router(model_router, tags=["model"])
-v3_router.include_router(front_router, tags=["front"])
+v3_router.include_router(model_router, tags=["level3"])
+v3_router.include_router(front_router, tags=["level3-front"])

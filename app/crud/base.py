@@ -1,6 +1,4 @@
 from typing import Generic, List, Optional, TypeVar, Generator
-import time
-import uuid
 import json
 import requests
 from pydantic import BaseModel as PydanticModel
@@ -118,7 +116,7 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
     @classmethod
     @handle_openrouter_errors
     @exponential_retry_wrapper
-    def call_openrouter_api_stream(cls, query: RequestSchemaType, timeout: int = 30) -> Generator[dict, None, None]:
+    def call_openrouter_api_stream(cls, query: RequestSchemaType, timeout: int = 30) -> Generator[str, None, None]:
         """
         Отправляет запрос в OpenRouter API в режиме стриминга.
         """
@@ -138,9 +136,6 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
             "stream": True,
         }
 
-        request_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
-        created_at = int(time.time())
-
         response = requests.post(url, headers=headers, json=payload, stream=True, timeout=timeout)
         response.raise_for_status()
 
@@ -150,28 +145,26 @@ class BaseAPIService(FiltrMixin, PaginationMixin, Generic[FilterSchemaType, Mode
                 if decoded_line == "[DONE]":
                     break
 
-                # Обрабатываем как с префиксом "data: ", так и без
                 if decoded_line.startswith("data: "):
                     data_str = decoded_line[len("data: ") :]
                 else:
                     data_str = decoded_line
 
-                if data_str:
-                    try:
-                        chunk = json.loads(data_str)
-                        if "choices" in chunk and len(chunk["choices"]) > 0:
-                            chunk.setdefault("id", request_id)
-                            chunk.setdefault("created", created_at)
-                            chunk.setdefault("model", query.model)
-                        yield chunk
-                    except json.JSONDecodeError:
-                        continue
+                if not data_str:
+                    continue
 
-        # Финальный чанк
-        yield {
-            "id": request_id,
-            "object": "chat.completion.chunk",
-            "created": created_at,
-            "model": query.model,
-            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
-        }
+                try:
+                    chunk = json.loads(data_str)
+                except json.JSONDecodeError:
+                    continue
+
+                if "choices" not in chunk or len(chunk["choices"]) == 0:
+                    continue
+
+                delta = chunk["choices"][0].get("delta", {})
+                content = delta.get("content", "")
+
+                if content:
+                    yield f"{content}\n\n"
+
+        yield " [DONE]\n\n"

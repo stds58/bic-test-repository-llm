@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let allModels = []; // Глобальный массив моделей
 
     // Загружаем модели
-    fetch('/api/models?per_page=100')
+    fetch('/models?per_page=100')
         .then(response => response.json())
         .then(models => {
             allModels = models;

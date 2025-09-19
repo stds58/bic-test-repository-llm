@@ -15,10 +15,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         startBtn.disabled = true;
-        outputDiv.innerText = "Подключение к модели...\n";
+        outputDiv.textContent = "Подключение к модели...\n";
 
         try {
-            const response = await fetch("/api/benchmark", {
+            const response = await fetch("/generate?stream=true", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -26,8 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: JSON.stringify({
                     prompt: prompt,
                     model: model,
-                    max_tokens: maxTokens,
-                    stream: true
+                    max_tokens: maxTokens
                 })
             });
 
@@ -38,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const reader = response.body.getReader();
             const decoder = new TextDecoder("utf-8");
             let buffer = "";
+            let fullText = ""; // ← НАКОПИТЕЛЬ ВСЕГО ТЕКСТА (новая строка!)
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -50,25 +50,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 for (let line of lines) {
                     if (line.trim() === "[DONE]") {
-                        outputDiv.innerText += "\n\nГенерация завершена.";
+                        outputDiv.textContent += "\n\nГенерация завершена.";
                         startBtn.disabled = false;
                         return;
                     }
 
-                    if (line.startsWith(" ")) {
-                        line = line.slice(1);
-                    }
+                    if (line.trim()) {
+                        // ДОБАВЛЯЕМ СИМВОЛЫ В БУФЕР
+                        fullText += line;
 
-                    if (line) {
-                        try {
-                            const chunk = JSON.parse(line);
-                            const content = chunk.choices?.[0]?.delta?.content || "";
-                            if (content) {
-                                outputDiv.innerText += content;
-                                outputDiv.scrollTop = outputDiv.scrollHeight;
-                            }
-                        } catch (e) {
-                            console.warn("Не удалось распарсить чанк:", line);
+                        // ОЧИЩАЕМ ЛИШНИЕ ПРОБЕЛЫ: заменяем 2+ пробела на 1
+                        let cleaned = fullText.replace(/\s+/g, " ").trim();
+
+                        // ОБНОВЛЯЕМ ТОЛЬКО ЕСЛИ ИЗМЕНИЛОСЬ
+                        if (outputDiv.textContent !== cleaned) {
+                            outputDiv.textContent = cleaned;
+                            outputDiv.scrollTop = outputDiv.scrollHeight;
                         }
                     }
                 }
@@ -76,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } catch (err) {
             console.error("Ошибка:", err);
-            outputDiv.innerText += "\n\nОшибка: " + err.message;
+            outputDiv.textContent += "\n\nОшибка: " + err.message;
             startBtn.disabled = false;
         }
     }
