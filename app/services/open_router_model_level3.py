@@ -7,7 +7,7 @@ from app.schemas.open_router_model import SOpenRouterFilter, GenerateRequest, Cr
 from app.schemas.base import PaginationParams
 from app.utils.benchmark_statistics import calculate_latency_stats
 from app.utils.csv_exporter import export_benchmark_to_csv
-from app.utils.stubs import DUMMY_BENCHMARK_RESULT
+from app.utils.stubs import fake_benchmark_result
 
 
 def find_many_item(filters: SOpenRouterFilter, pagination: PaginationParams):
@@ -47,8 +47,8 @@ async def generate_benchmark(query: CreateBenchMark):
     for prompt in prompts:
         test_query = GenerateRequest(prompt=prompt, model=query.model, max_tokens=50)
         func = partial(benchmark_model_call, query=test_query)
-        result = calculate_latency_stats(model=query.model, prompt=prompt, runs=query.runs, func=func)
-        # result = DUMMY_BENCHMARK_RESULT
+        #result = calculate_latency_stats(model=query.model, prompt=prompt, runs=query.runs, func=func)
+        result = fake_benchmark_result(model=query.model, prompt=prompt, runs=query.runs)
         benchmark_results.append(result)
     filename = export_benchmark_to_csv(benchmark_results)
 

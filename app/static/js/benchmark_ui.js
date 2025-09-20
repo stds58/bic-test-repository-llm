@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const visualizeCheckbox = document.getElementById('visualize');
         const downloadBtn = document.getElementById('downloadCsvBtn');
         downloadBtn.style.display = 'none';
+        const visualizeValue = visualizeCheckbox.checked;
 
         if (fileInput.files.length > 0) {
             formData.append('prompt_file', fileInput.files[0]);
@@ -109,8 +110,8 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsDiv.innerHTML = '<p>Запускаем бенчмарк... Это может занять несколько минут.</p>';
 
         try {
-            // 1. Отправляем POST-запрос на /api/benchmark с формой
-            const response = await fetch('/api/benchmark', {
+            // 1. Отправляем POST-запрос на /benchmark с формой
+            const response = await fetch(`/benchmark?visualize=${visualizeValue}`, {
                 method: 'POST',
                 body: formData
             });
