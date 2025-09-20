@@ -33,6 +33,8 @@
 
 * [ ] Провести 10 тестов: 5 для `/generate` (разные модели, включая stream), 5 для `/benchmark` (≥3 промпта, разные `runs`).
 
+* [benchmark_results.csv](app/exports/benchmark_results.csv)
+
 ---
 
 * [ ] Замерить общую latency (например, `curl -w "%{time_total}"`).
