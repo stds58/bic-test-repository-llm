@@ -46,6 +46,10 @@
 ---
 * [ ] Сравнительная таблица моделей (средняя задержка + `std_dev`).
 
+* [report.py](app/utils/report.py)
+
+![](img/img8.png)
+
 ---
 * [ ] Приложить: `benchmark_results.csv`, `server_logs.txt`, скриншоты ответов.
 * [benchmark_results.csv](app/exports/benchmark_results.csv)
