@@ -1,5 +1,57 @@
 # Репозиторий с тестовым заданием
 
+* Сваггер http://127.0.0.1:8000/api/docs
+
+---
+
+* [ ] `/generate`: при `stream=true` — **SSE-стриминг**.
+
+* вёрстка SSE-стриминга с моделью http://127.0.0.1:8000/stream_test
+
+![](img/img3_2.png)
+
+
+* SSE-стриминг http://127.0.0.1:8000/generate?stream=true
+
+![](img/img3.png)
+
+---
+
+* [ ] `/benchmark`: при `visualize=true` — вернуть **HTML-таблицу**.
+
+* вёрстка бенчмарка http://127.0.0.1:8000/benchmark_ui
+
+![](img/img5_3.png)
+
+* бенчмарк c HTML-таблицей http://127.0.0.1:8000/benchmark?visualize=true
+
+![](img/img5_1.png)
+
+![](img/img5_2.png)
+
+---
+
+* [ ] Провести 10 тестов: 5 для `/generate` (разные модели, включая stream), 5 для `/benchmark` (≥3 промпта, разные `runs`).
+
+---
+
+* [ ] Замерить общую latency (например, `curl -w "%{time_total}"`).
+
+![](img/img6.png)
+
+![](img/img7.png)
+
+---
+* [ ] Сравнительная таблица моделей (средняя задержка + `std_dev`).
+
+---
+* [ ] Приложить: `benchmark_results.csv`, `server_logs.txt`, скриншоты ответов.
+* [benchmark_results.csv](app/exports/benchmark_results.csv)
+* [server_logs.txt](logs/server_logs.txt)
+
+---
+
+
 ## Сваггер
 http://127.0.0.1:8000/api/docs
 
@@ -69,4 +121,3 @@ curl -o /dev/null -sS -w "time_total=%{time_total}\n" -X POST "http://172.23.80.
 curl -o /dev/null -sS -w "time_total=%{time_total}\n" -X POST "http://172.23.80.1:8000/benchmark" -F "prompt_file=@prompts.txt;type=text/plain" -F "model=deepseek/deepseek-chat-v3.1:free" -F "runs=3"
 ```
 ![](img/img7.png)
-

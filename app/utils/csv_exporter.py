@@ -11,9 +11,11 @@ def export_benchmark_to_csv(benchmark_results: list):
     fieldnames = ["model", "prompt", "runs", "avg", "min", "max", "std_dev"]
     filepath = EXPORT_DIR / filename
     try:
-        with open(filepath, mode="w", newline="", encoding="utf-8") as csvfile:
+        file_exists = filepath.exists()
+        with open(filepath, mode="a", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
+            if not file_exists:
+                writer.writeheader()
             for row in benchmark_results:
                 writer.writerow(row)
         return filename
